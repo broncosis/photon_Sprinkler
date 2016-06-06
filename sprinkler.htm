@@ -1,0 +1,245 @@
+<html>
+  <head>
+      <title>bobcat sprinkler</title>
+  </head>
+
+  <body>
+    Zone <select class="form-control" id="zOne">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      </select>
+    Start Hour <select class="form-control" id="startHour">
+      <option value="00">12:00</option>
+      <option value="01">1:00</option>
+      <option value="02">2:00</option>
+      <option value="03">3:00</option>
+      <option value="04">4:00</option>
+      <option value="05">5:00</option>
+      <option value="06">6:00</option>
+      <option value="07">7:00</option>
+      <option value="08">8:00</option>
+      <option value="09">9:00</option>
+      <option value="10">10:00</option>
+      <option value="11">11:00</option>
+    </select>
+    <select class="form-control" id="amPm1">
+      <option value="00">AM</option>
+      <option value="12">PM</option>
+    </select>
+    Start Minute <select class="form-control" id="startMinute">
+      <option value="00">00</option>
+      <option value="15">15</option>
+      <option value="30">30</option>
+      <option value="45">45</option>
+    </select>
+
+    Stop Hour <select class="form-control" id="stopHour">
+      <option value="00">12:00</option>
+      <option value="01">1:00</option>
+      <option value="02">2:00</option>
+      <option value="03">3:00</option>
+      <option value="04">4:00</option>
+      <option value="05">5:00</option>
+      <option value="06">6:00</option>
+      <option value="07">7:00</option>
+      <option value="08">8:00</option>
+      <option value="09">9:00</option>
+      <option value="10">10:00</option>
+      <option value="11">11:00</option>
+    </select>
+    <select class="form-control" id="amPm2">
+      <option value="0">AM</option>
+      <option value="12">PM</option>
+    </select>
+        Stop Minute <select class="form-control" id="stopMinute">
+      <option value="00">00</option>
+      <option value="15">15</option>
+      <option value="30">30</option>
+      <option value="45">45</option>
+    </select>
+
+<br>
+<script type="text/javascript">
+	function checkTotal() {
+		document.daysList.total.value = '';
+		var sum = 0;
+		for (i=0;i<document.daysList.choice.length;i++) {
+		  if (document.daysList.choice[i].checked) {
+		  	sum = sum + parseInt(document.daysList.choice[i].value);
+		  }
+		}
+		document.daysList.total.value = sum;
+	}
+</script>
+
+<form name="daysList">
+    <input type="checkbox" name="choice" value="1" onchange="checkTotal()" id="day1"/>Sunday
+    <input type="checkbox" name="choice" value="2" onchange="checkTotal()" id="day2"/>Monday
+    <input type="checkbox" name="choice" value="4" onchange="checkTotal()" id="day3"/>Tuesday
+    <input type="checkbox" name="choice" value="8" onchange="checkTotal()" id="day4"/>Wensday
+    <input type="checkbox" name="choice" value="16" onchange="checkTotal()" id="day5"/>Thursday
+    <input type="checkbox" name="choice" value="32" onchange="checkTotal()" id="day6"/>Friday
+    <input type="checkbox" name="choice" value="64" onchange="checkTotal()" id="day7"/>Saterday
+    <input type="hidden" size="3" name="total" id="days" value="0">
+  </form>
+    <button type="button" onclick="sendValues()">Send values</button>
+
+
+<br>
+<span id="zone1"></span><br>
+<span id="zone2"></span><br>
+<span id="zone3"></span><br>
+<span id="zone4"></span><br>
+<span id="stats"></span><br>
+    <span id="tstamp"></span>
+
+    <br><br>
+    <button onclick="start()">get info</button>
+
+    <script type="text/javascript">
+
+    </script>
+
+
+    <script src="http://cdn.jsdelivr.net/particle-api-js/5/particle.min.js">  </script>
+    <script type="text/javascript">
+    var accessToken = "22177242df9efbe256f30de674f4dd55819eb13c";
+    var deviceID = "29001e000347343339373536";
+    var particle;
+    var token;
+    function init() {
+    particle = new Particle();
+
+    	/*
+       particle.login({username: 'rob@bobcat.ca', password: 'bronco2'}).then(
+    	  	function(data){
+    	    	console.log('API call completed on promise resolve: ', data.body.access_token);
+    	    	token = data.body.access_token;
+    	   },
+    	  	function(err) {
+    	    	console.log('API call completed on promise fail: ', err);
+    	   }
+    	);
+
+    	//....
+*/
+    }
+
+
+      //you can use your accesstoken, or your email/passsword to log in. Uncomment accordingly below.
+
+  var accessToken = "22177242df9efbe256f30de674f4dd55819eb13c";
+  var deviceID = "29001e000347343339373536";
+
+  var zOne;
+  var startHour;
+  var startMinute;
+  var stopHour;
+  var stopMinute;
+  var amPm1;
+  var combinedTime;
+  var amPm2;
+  var days;
+  var timeCalc;
+init();
+
+
+  function sendValues(){
+    amPm1 = document.getElementById('amPm1');
+    amPm2 = document.getElementById('amPm2');
+    zOne = document.getElementById('zOne');
+    days = document.getElementById('days');
+    startHour = document.getElementById('startHour');
+    startMinute = document.getElementById('startMinute');
+    stopHour = document.getElementById('stopHour');
+    stopMinute = document.getElementById('stopMinute');
+    timeCalc =  parseInt(startHour.value,10);
+    amPm1 = parseInt(amPm1.value,10);
+    amPm1 = timeCalc + amPm1 +'';
+    timeCalc = 0;
+    timeCalc =  parseInt(stopHour.value,10);
+    amPm2 = parseInt(amPm2.value,10);
+    amPm2 = timeCalc + amPm2 +'';
+    combinedTime = amPm1 + '~' + startMinute.value + '~' + amPm2 + '~' + stopMinute.value + '~' + days.value + '~' + zOne.value;
+    console.log(combinedTime);
+
+
+    var fnPr = particle.callFunction({ deviceId: deviceID, name: 'parse', argument: combinedTime, auth: accessToken });
+
+    fnPr.then(
+      function(data) {
+        console.log('Function called succesfully:', data);
+      }, function(err) {
+        console.log('An error occurred:', err);
+      });
+
+
+
+    //document.write("string sent to photon <br>");
+    //document.write(combinedTime);
+    //document.write("<br> start hour ~ start min ~ stop hour ~ stop min ~ zone ~ days");
+    startHour.value = '';
+    startMinute.value = '';
+    stopHour.value = '';
+    stopMinute.value = '';
+    zOne.value = '';
+    days.value = '';
+  }
+
+
+  function start() {
+
+      document.getElementById("zone1").innerHTML = "Waiting for data...";
+
+      var eventSource = new EventSource("https://api.particle.io/v1/devices/" + deviceID + "/events/?access_token=" + accessToken);
+
+      eventSource.addEventListener('open', function(e) {
+          console.log("Opened!"); },false);
+
+      eventSource.addEventListener('error', function(e) {
+          console.log("Errored!"); },false);
+
+      eventSource.addEventListener('Zone1', function(e) {
+          var parsedData = JSON.parse(e.data);
+          var tempSpan = document.getElementById("zone1");
+          var tsSpan   = document.getElementById("tstamp");
+          tempSpan.innerHTML = "zone 1 state " + parsedData.data + " on time, off time - days ";
+          tempSpan.style.fontSize = "16px";
+          tsSpan.innerHTML = "At timestamp " + parsedData.published_at;
+          tsSpan.style.fontSize = "9px";
+          },false);
+      eventSource.addEventListener('Zone2', function(e) {
+          var parsedData = JSON.parse(e.data);
+          var tempSpan = document.getElementById("zone2");
+          var tsSpan   = document.getElementById("tstamp");
+          tempSpan.innerHTML = "zone 2 state " + parsedData.data + " on time, off time - days ";
+          tempSpan.style.fontSize = "16px";
+          },false);
+      eventSource.addEventListener('Zone3', function(e) {
+          var parsedData = JSON.parse(e.data);
+          var tempSpan = document.getElementById("zone3");
+          var tsSpan   = document.getElementById("tstamp");
+          tempSpan.innerHTML = "zone 3 state " + parsedData.data + " on time, off time - days";
+          tempSpan.style.fontSize = "16px";
+          },false);
+      eventSource.addEventListener('Zone4', function(e) {
+          var parsedData = JSON.parse(e.data);
+          var tempSpan = document.getElementById("zone4");
+          tempSpan.innerHTML = "zone 4 state " + parsedData.data + " on time, off time - days";
+          tempSpan.style.fontSize = "16px";
+          } ,false);
+      eventSource.addEventListener('Stats', function(e) {
+          var rawData = JSON.parse(e.data);
+          var parsedData = JSON.parse(rawData.data);
+          var tempSpan = document.getElementById("stats");
+          tempSpan.innerHTML = "stats " + parsedData.Tmp + "c Temp " + parsedData.Hum + "% Relitive Humidity " + parsedData.Lvl + " Lvl " + parsedData.Ltrs + " Liters in tank";
+          tempSpan.style.fontSize = "16px";
+          } ,false);
+  }
+
+
+</script>
+  </body>
+</html>

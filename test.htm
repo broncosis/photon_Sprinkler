@@ -1,0 +1,75 @@
+<input type="text" class="form-control" placeholder="Start Hour?" id="startHour">
+    <input type="text" class="form-control" placeholder="Start Minute?" id="startMinute">
+    <input type="text" class="form-control" placeholder="Stop Hour?" id="stopHour">
+    <input type="text" class="form-control" placeholder="Stop Minute?" id="stopMinute">
+
+    <br>
+
+    <button type="button" onclick="sendValues()">Send values</button>
+    <!--
+    <button type="button" onclick="functionCall('functionName', 'functionArgument')">function 1</button>
+    <button type="button" onclick="functionCall('functionName', 'functionArgument')">function 2</button>
+    <button type="button" onclick="functionCall('functionName', 'functionArgument')">function 3</button>
+    <button type="button" onclick="functionCall('functionName', 'functionArgument')">function 4</button>
+    -->
+
+    <script src="http://cdn.jsdelivr.net/sparkjs/1.0.0/spark.min.js"></script>
+
+    <script>
+      //you can use your accesstoken, or your email/passsword to log in. Uncomment accordingly below.
+      var accessToken = "22177242df9efbe256f30de674f4dd55819eb13c";
+    var deviceID = "29001e000347343339373536";
+  var startHour;
+  var startMinute;
+  var stopHour;
+  var stopMinute;
+
+  var combinedTime;
+
+  //console.log(startHour + startMinute + stopHour + stopMinute);
+
+  function sendValues(){
+    startHour = document.getElementById('startHour');
+    startMinute = document.getElementById('startMinute');
+    stopHour = document.getElementById('stopHour');
+    stopMinute = document.getElementById('stopMinute');
+
+    combinedTime = startHour.value + '~' + startMinute.value + '~' + stopHour.value + '~' + stopMinute.value;
+    console.log(combinedTime);
+
+    functionCall('parse', combinedTime);
+
+    startHour.value = '';
+    startMinute.value = '';
+    stopHour.value = '';
+    stopMinute.value = '';
+  }
+
+
+  spark.on('login', function(response) {
+    console.log(response);
+  });
+
+  // callback to be executed by each core
+  var callback = function(err, data) {
+    if (err) {
+      console.log('An error occurred while getting device attrs:', err);
+    } else {
+      console.log('Device attr retrieved successfully:', data);
+    }
+  };
+
+  function functionCall(functionName, functionArgument){
+    // The function needs to be defined  in the firmware uploaded to the
+    // the Spark core and registered to the Spark cloud, same thing we do
+    // with variables. You pass along the name of the function and the params.
+    spark.callFunction(deviceID, functionName, functionArgument, callback);
+  }
+
+  // Uncomment a line below depending on your preferred log-in method.
+  //spark.login({ username: 'email@example.com', password: 'password' });
+  spark.login({ accessToken: accessToken });
+
+</script>
+  </body>
+</html>
