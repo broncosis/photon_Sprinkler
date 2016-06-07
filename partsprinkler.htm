@@ -83,8 +83,9 @@
 <span id="stats"></span><br>
     <span id="tstamp"></span>
 
-    <br><br>
-    <button onclick="start()">get info</button>
+    <br>
+    <button onclick="getinfo()">get info</button>
+    <br>please only use this when needed
     <br><br>
     <button id = "1"  type="submit" onclick="manual(this)">Zone 1 on</button>
     <button id = "2"  type="button" onclick="manual(this)">Zone 1 off</button><br>
@@ -103,13 +104,6 @@
     var particle;
     var token;
     particle = new Particle();
-
-
-
-      //you can use your accesstoken, or your email/passsword to log in. Uncomment accordingly below.
-
-  var accessToken = "22177242df9efbe256f30de674f4dd55819eb13c";
-  var deviceID = "29001e000347343339373536";
 
   function sendValues(){
     var zOne;
@@ -265,7 +259,17 @@ switch (button.id) {
           tempSpan.style.fontSize = "16px";
           } ,false);
   }
+function getinfo(){
 
+  var fnPr = particle.callFunction({ deviceId: deviceID, name: 'parse', argument: '3~1~1~1~1~1~1' , auth: accessToken });
+
+  fnPr.then(
+    function(data) {
+      console.log('Function called succesfully:', data);
+    }, function(err) {
+      console.log('An error occurred:', err);
+    });
+}
 
 </script>
   </body>
