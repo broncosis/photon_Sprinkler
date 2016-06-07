@@ -118,7 +118,7 @@
     readTextFile("http://bobcat.ca/testing.txt", function(text){
         var rawdata = JSON.parse(text.data);
         var parsingData = JSON.parse(rawdata.data);
-        console.log(parsingData);
+        console.log(rawdata);
         accessToken = parsingData.token;
         deviceID = parsingData.device;
     });
