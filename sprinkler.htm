@@ -1,9 +1,9 @@
 <html>
   <head>
-      <title>bobcat sprinkler</title>
+      <title>Bobcat Sprinklers</title>
   </head>
 
-  <body>
+  <body onload="start()">
     Zone <select class="form-control" id="zOne">
       <option value="1">1</option>
       <option value="2">2</option>
@@ -61,18 +61,6 @@
     </select>
 
 <br>
-<script type="text/javascript">
-	function checkTotal() {
-		document.daysList.total.value = '';
-		var sum = 0;
-		for (i=0;i<document.daysList.choice.length;i++) {
-		  if (document.daysList.choice[i].checked) {
-		  	sum = sum + parseInt(document.daysList.choice[i].value);
-		  }
-		}
-		document.daysList.total.value = sum;
-	}
-</script>
 
 <form name="daysList">
     <input type="checkbox" name="choice" value="1" onchange="checkTotal()" id="day1"/>Sunday
@@ -95,58 +83,62 @@
 <span id="stats"></span><br>
     <span id="tstamp"></span>
 
+    <br>
+    <button onclick="getinfo()">get info</button>
+    <br>please only use this when needed
     <br><br>
-    <button onclick="start()">get info</button>
+    <button id = "1"  type="submit" onclick="manual(this)">Zone 1 on</button>
+    <button id = "2"  type="button" onclick="manual(this)">Zone 1 off</button><br>
+    <button id = "3"  type="button" onclick="manual(this)">Zone 2 on</button>
+    <button id = "4"  type="button" onclick="manual(this)">Zone 2 off</button><br>
+    <button id = "5"  type="button" onclick="manual(this)">Zone 3 on</button>
+    <button id = "6"  type="button" onclick="manual(this)">Zone 3 off</button><br>
+    <button id = "7"  type="button" onclick="manual(this)">Zone 4 on</button>
+    <button id = "8"  type="button" onclick="manual(this)">Zone 4 off</button><br>
 
+
+    <script src="http://cdn.jsdelivr.net/particle-api-js/5/particle.min.js"> </script>
     <script type="text/javascript">
+var accessToken ="";
+var deviceID ="";
+var accessData;
+    function readTextFile(file, callback) {
+      var rawFile = new XMLHttpRequest();
+      rawFile.overrideMimeType("application/json");
+      rawFile.open("GET", file, false);
+      rawFile.onreadystatechange = function() {
+          if (rawFile.readyState === 4 && rawFile.status == "200") {
+              callback(rawFile.responseText);
+          }
+      }
+      rawFile.send(null);
+  }
 
-    </script>
+  //usage:
+  readTextFile("http://bobcat.ca/testing.json", function(text){
+      accessData = JSON.parse(text);
+      accessToken = String(accessData.token);
+      deviceID = String(accessData.device);
+      //console.log(accessToken);
+});
 
-
-    <script src="http://cdn.jsdelivr.net/particle-api-js/5/particle.min.js">  </script>
-    <script type="text/javascript">
-    var accessToken = "22177242df9efbe256f30de674f4dd55819eb13c";
-    var deviceID = "29001e000347343339373536";
     var particle;
     var token;
-    function init() {
     particle = new Particle();
 
-    	/*
-       particle.login({username: 'rob@bobcat.ca', password: 'bronco2'}).then(
-    	  	function(data){
-    	    	console.log('API call completed on promise resolve: ', data.body.access_token);
-    	    	token = data.body.access_token;
-    	   },
-    	  	function(err) {
-    	    	console.log('API call completed on promise fail: ', err);
-    	   }
-    	);
-
-    	//....
-*/
-    }
-
-
-      //you can use your accesstoken, or your email/passsword to log in. Uncomment accordingly below.
-
-  var accessToken = "22177242df9efbe256f30de674f4dd55819eb13c";
-  var deviceID = "29001e000347343339373536";
-
-  var zOne;
-  var startHour;
-  var startMinute;
-  var stopHour;
-  var stopMinute;
-  var amPm1;
-  var combinedTime;
-  var amPm2;
-  var days;
-  var timeCalc;
-init();
-
-
   function sendValues(){
+    var zOne;
+    var startHour;
+    var startMinute;
+    var stopHour;
+    var stopMinute;
+    var amPm1;
+    var combinedTime;
+    var amPm2;
+    var days;
+    var timeCalc;
+
+    checkTotal();
     amPm1 = document.getElementById('amPm1');
     amPm2 = document.getElementById('amPm2');
     zOne = document.getElementById('zOne');
@@ -162,11 +154,11 @@ init();
     timeCalc =  parseInt(stopHour.value,10);
     amPm2 = parseInt(amPm2.value,10);
     amPm2 = timeCalc + amPm2 +'';
-    combinedTime = amPm1 + '~' + startMinute.value + '~' + amPm2 + '~' + stopMinute.value + '~' + days.value + '~' + zOne.value;
+    combinedTime = '1' + '~' + amPm1 + '~' + startMinute.value + '~' + amPm2 + '~' + stopMinute.value + '~' + days.value + '~' + zOne.value;
     console.log(combinedTime);
 
 
-    var fnPr = particle.callFunction({ deviceId: deviceID, name: 'parse', argument: combinedTime, auth: accessToken });
+    var fnPr = particle.callFunction({ deviceId: accessData.device, name: 'parse', argument: combinedTime, auth: accessData.token });
 
     fnPr.then(
       function(data) {
@@ -175,18 +167,68 @@ init();
         console.log('An error occurred:', err);
       });
 
-
-
-    //document.write("string sent to photon <br>");
-    //document.write(combinedTime);
-    //document.write("<br> start hour ~ start min ~ stop hour ~ stop min ~ zone ~ days");
-    startHour.value = '';
+  /*  startHour.value = '';
     startMinute.value = '';
     stopHour.value = '';
     stopMinute.value = '';
     zOne.value = '';
     days.value = '';
+*/
   }
+  function manual(button) {
+var manualCotrol;
+
+switch (button.id) {
+        case '1':
+            manualControl = '2~1~1~1~1~1~1';
+            break;
+        case '2':
+            manualControl = '2~1~0~1~1~1~1';
+            break;
+        case '3':
+            manualControl = '2~2~1~1~1~1~1';
+            break;
+        case '4':
+            manualControl = '2~2~0~1~1~1~1';
+            break;
+        case '5':
+            manualControl = '2~3~1~1~1~1~1';
+            break;
+        case '6':
+            manualControl = '2~3~0~1~1~1~1';
+            break;
+        case '7':
+            manualControl = '2~4~1~1~1~1~1';
+            break;
+        case '8':
+            manualControl = '2~4~0~1~1~1~1';
+            break;
+        default:
+            return false;
+    }
+
+      console.log(manualControl);
+
+    var fnPr = particle.callFunction({ deviceId: deviceID, name: 'parse', argument: manualControl, auth: accessToken });
+
+    fnPr.then(
+      function(data) {
+        console.log('Function called succesfully:', data);
+      }, function(err) {
+        console.log('An error occurred:', err);
+      });
+
+  }
+  	function checkTotal() {
+  		document.daysList.total.value = '';
+  		var sum = 0;
+  		for (i=0;i<document.daysList.choice.length;i++) {
+  		  if (document.daysList.choice[i].checked) {
+  		  	sum = sum + parseInt(document.daysList.choice[i].value);
+  		  }
+  		}
+  		document.daysList.total.value = sum;
+  	}
 
 
   function start() {
@@ -234,11 +276,21 @@ init();
           var rawData = JSON.parse(e.data);
           var parsedData = JSON.parse(rawData.data);
           var tempSpan = document.getElementById("stats");
-          tempSpan.innerHTML = "stats " + parsedData.Tmp + "c Temp " + parsedData.Hum + "% Relitive Humidity " + parsedData.Lvl + " Lvl " + parsedData.Ltrs + " Liters in tank";
+          tempSpan.innerHTML = "Stats <br>" + parsedData.Tmp + "c Temp <br>" + parsedData.Hum + "% Relitive Humidity <br>" + parsedData.Lvl + " Lvl " + parsedData.Ltrs + " Liters in tank";
           tempSpan.style.fontSize = "16px";
           } ,false);
   }
+function getinfo(){
 
+  var fnPr = particle.callFunction({ deviceId: accessData.device, name: 'parse', argument: '3~1~1~1~1~1~1' , auth: accessData.token });
+
+  fnPr.then(
+    function(data) {
+      console.log('Function called succesfully:', data);
+    }, function(err) {
+      console.log('An error occurred:', err);
+    });
+}
 
 </script>
   </body>
