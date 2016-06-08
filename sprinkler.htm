@@ -115,7 +115,7 @@ var accessData;
   }
 
   //usage:
-  readTextFile("http://bobcat.ca/testing.json", function(text){
+  readTextFile("/testing.json", function(text){
       accessData = JSON.parse(text);
       accessToken = String(accessData.token);
       deviceID = String(accessData.device);
