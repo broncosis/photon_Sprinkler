@@ -1,4 +1,7 @@
 {
 "token": "Access token here",
-"device": "device ID here"
+"device": "device ID here",
+"TSwapi": "thing speak Write api key",
+"TSrapi": "thing speak read api key",
+"TSchan": cahnel id
 }

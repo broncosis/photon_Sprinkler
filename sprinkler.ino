@@ -29,7 +29,7 @@ int humd;
 int tmp;
 int state[4] = {0,0,0,0};
 int zoneOut[5] = {D7,A4,A5,A6,A7};
-
+TCPClient client;
 HC_SR04 rangefinder = HC_SR04(trigPin, echoPin, 2.0,102.0);
 HTU21D htu = HTU21D();
 
@@ -53,7 +53,7 @@ EEPROM.get(50, zone3str);
 EEPROM.get(70, zone4str);
 EEPROM.get(90, state);
 
-//Particle.variable("cm", &cm, DOUBLE);
+ThingSpeak.begin(client);
 
 Time.zone(-7);
 
@@ -111,7 +111,13 @@ void loop(){
         }
         sprintf(publishString,"{\"Tmp\": %u, \"Hum\": %u, \"Lvl\": %u, \"Ltrs\": %u}",tmp,humd,lvl,ltrs);
         Particle.publish("Stats",publishString);
-        loops = ++loops;
+				ThingSpeak.setField(1,lvl);
+				ThingSpeak.setField(2,ltrs);
+				ThingSpeak.setField(3,htu.readTemperature());
+				ThingSpeak.setField(4,htu.readHumidity());
+				ThingSpeak.writeFields(channelid, "write api key");
+
+				loops = ++loops;
     }
 
 };
@@ -120,9 +126,14 @@ void loop(){
 int lvlcheck(){
 cm = rangefinder.getDistanceCM();
 delay(100);
-lvl = 102-cm;
-ltrs = lvl*10;
+lvl = 104-cm;
+if (lvl > 68.5){
+    ltrs = lvl*10 + 600;
+}
+else { ltrs = lvl * 18.76;}
 return lvl;
+// barell heigh 68.5  x 18.76  this is calculated for my own setup ( 1 ibc tote and 3 plastic drums on thier side )
+
 };
 
 
