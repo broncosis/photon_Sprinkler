@@ -97,10 +97,31 @@
     <button id = "8"  type="button" onclick="manual(this)">Zone 4 off</button><br>
 
 
-    <script src="http://cdn.jsdelivr.net/particle-api-js/5/particle.min.js">  </script>
+    <script src="http://cdn.jsdelivr.net/particle-api-js/5/particle.min.js"> </script>
     <script type="text/javascript">
-    var accessToken = "22177242df9efbe256f30de674f4dd55819eb13c";
-    var deviceID = "29001e000347343339373536";
+var accessToken ="";
+var deviceID ="";
+var accessData;
+    function readTextFile(file, callback) {
+      var rawFile = new XMLHttpRequest();
+      rawFile.overrideMimeType("application/json");
+      rawFile.open("GET", file, false);
+      rawFile.onreadystatechange = function() {
+          if (rawFile.readyState === 4 && rawFile.status == "200") {
+              callback(rawFile.responseText);
+          }
+      }
+      rawFile.send(null);
+  }
+
+  //usage:
+  readTextFile("/testing.json", function(text){
+      accessData = JSON.parse(text);
+      accessToken = String(accessData.token);
+      deviceID = String(accessData.device);
+      //console.log(accessToken);
+});
+
     var particle;
     var token;
     particle = new Particle();
@@ -137,7 +158,7 @@
     console.log(combinedTime);
 
 
-    var fnPr = particle.callFunction({ deviceId: deviceID, name: 'parse', argument: combinedTime, auth: accessToken });
+    var fnPr = particle.callFunction({ deviceId: accessData.device, name: 'parse', argument: combinedTime, auth: accessData.token });
 
     fnPr.then(
       function(data) {
@@ -255,13 +276,13 @@ switch (button.id) {
           var rawData = JSON.parse(e.data);
           var parsedData = JSON.parse(rawData.data);
           var tempSpan = document.getElementById("stats");
-          tempSpan.innerHTML = "stats " + parsedData.Tmp + "c Temp " + parsedData.Hum + "% Relitive Humidity " + parsedData.Lvl + " Lvl " + parsedData.Ltrs + " Liters in tank";
+          tempSpan.innerHTML = "Stats <br>" + parsedData.Tmp + "c Temp <br>" + parsedData.Hum + "% Relitive Humidity <br>" + parsedData.Lvl + " Lvl " + parsedData.Ltrs + " Liters in tank";
           tempSpan.style.fontSize = "16px";
           } ,false);
   }
 function getinfo(){
 
-  var fnPr = particle.callFunction({ deviceId: deviceID, name: 'parse', argument: '3~1~1~1~1~1~1' , auth: accessToken });
+  var fnPr = particle.callFunction({ deviceId: accessData.device, name: 'parse', argument: '3~1~1~1~1~1~1' , auth: accessData.token });
 
   fnPr.then(
     function(data) {
