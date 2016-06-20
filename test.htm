@@ -10,6 +10,7 @@
       <option value="2">2</option>
       <option value="3">3</option>
       <option value="4">4</option>
+      <option value="5">5</option>
       </select>
     Start Hour <select class="form-control" id="startHour">
       <option value="00">12:00</option>
@@ -81,6 +82,7 @@
 <span id="zone2"></span><br>
 <span id="zone3"></span><br>
 <span id="zone4"></span><br>
+<span id="zone5"></span><br>
 <span id="stats"></span><br>
     <span id="tstamp"></span>
 
@@ -96,7 +98,13 @@
     <button id = "6"  type="button" onclick="manual(this)">Zone 3 off</button><br>
     <button id = "7"  type="button" onclick="manual(this)">Zone 4 on</button>
     <button id = "8"  type="button" onclick="manual(this)">Zone 4 off</button><br>
+    <button id = "9"  type="button" onclick="manual(this)">Zone 5 on</button>
+    <button id = "10"  type="button" onclick="manual(this)">Zone 5 off</button><br>
 
+    <div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/1?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Water%20Lvl%20cm&amp;xaxis=Date%2FTime&amp;title=Water%20Lvl%20cm" height="300" width="800" ></iframe></div><br>
+    <div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/2?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Water%20Lvl%20Ltrs&amp;xaxis=Date%2FTime&amp;title=Water%20Lvl%20Ltrs" height="300" width="800" ></iframe></div><br>
+    <div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/3?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Temp&amp;xaxis=Date%2FTime&amp;title=Temprature" height="300" width="800" ></iframe></div><br>
+    <div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/4?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Humidity&amp;xaxis=Date%2FTime&amp;title=Humidity" height="300" width="800" ></iframe></div><br>
 
     <script src="http://cdn.jsdelivr.net/particle-api-js/5/particle.min.js"> </script>
     <script type="text/javascript">
@@ -204,6 +212,12 @@ switch (button.id) {
         case '8':
             manualControl = '2~4~0~1~1~1~1';
             break;
+        case '9':
+            manualControl = '2~5~1~1~1~1~1';
+            break;
+        case '10':
+            manualControl = '2~5~0~1~1~1~1';
+            break;
         default:
             return false;
     }
@@ -273,6 +287,13 @@ switch (button.id) {
           tempSpan.innerHTML = "zone 4 state " + parsedData.data + " on time, off time - days";
           tempSpan.style.fontSize = "16px";
           } ,false);
+      eventSource.addEventListener('Zone5', function(e) {
+          var rawData = JSON.parse(e.data);
+          var parsedData = JSON.parse(rawData.data);
+          var tempSpan = document.getElementById("zone5");
+          tempSpan.innerHTML = "zone 5 state " + parsedData.sta + " on time "+ parsedData.sth + ":"+ parsedData.stm + " off time " + parsedData.sph + ":" + parsedData.spm +" days " + parsedData.day;
+          tempSpan.style.fontSize = "16px";
+          },false);
       eventSource.addEventListener('Stats', function(e) {
           var rawData = JSON.parse(e.data);
           var parsedData = JSON.parse(rawData.data);
