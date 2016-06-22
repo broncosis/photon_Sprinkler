@@ -68,10 +68,10 @@
     <input type="checkbox" name="choice" value="1" onchange="checkTotal()" id="day1"/>Sunday
     <input type="checkbox" name="choice" value="2" onchange="checkTotal()" id="day2"/>Monday
     <input type="checkbox" name="choice" value="4" onchange="checkTotal()" id="day3"/>Tuesday
-    <input type="checkbox" name="choice" value="8" onchange="checkTotal()" id="day4"/>Wensday
+    <input type="checkbox" name="choice" value="8" onchange="checkTotal()" id="day4"/>Wednesday
     <input type="checkbox" name="choice" value="16" onchange="checkTotal()" id="day5"/>Thursday
     <input type="checkbox" name="choice" value="32" onchange="checkTotal()" id="day6"/>Friday
-    <input type="checkbox" name="choice" value="64" onchange="checkTotal()" id="day7"/>Saterday
+    <input type="checkbox" name="choice" value="64" onchange="checkTotal()" id="day7"/>Saturday
     <input type="hidden" size="3" name="total" id="days" value="0">
   </form>
     <button type="button" onclick="sendValues()">Send values</button>
@@ -259,34 +259,36 @@ switch (button.id) {
           console.log("Errored!"); },false);
 
       eventSource.addEventListener('Zone1', function(e) {
-          var parsedData = JSON.parse(e.data);
-          var tempSpan = document.getElementById("zone1");
           var tsSpan   = document.getElementById("tstamp");
-          tempSpan.innerHTML = "zone 1 state " + parsedData.data + " on time, off time - days ";
+          var rawData = JSON.parse(e.data);
+          var parsedData = JSON.parse(rawData.data);
+          var tempSpan = document.getElementById("zone1");
+          tempSpan.innerHTML = "zone 1 state " + parsedData.sta + " on time "+ parsedData.sth + ":"+ parsedData.stm + " off time " + parsedData.sph + ":" + parsedData.spm +" days " + parsedData.day;
           tempSpan.style.fontSize = "16px";
-          tsSpan.innerHTML = "At timestamp " + parsedData.published_at;
+          tsSpan.innerHTML = "At timestamp " + rawData.published_at;
           tsSpan.style.fontSize = "9px";
           },false);
       eventSource.addEventListener('Zone2', function(e) {
-          var parsedData = JSON.parse(e.data);
-          var tempSpan = document.getElementById("zone2");
-          var tsSpan   = document.getElementById("tstamp");
-          tempSpan.innerHTML = "zone 2 state " + parsedData.data + " on time, off time - days ";
-          tempSpan.style.fontSize = "16px";
-          },false);
+        var rawData = JSON.parse(e.data);
+        var parsedData = JSON.parse(rawData.data);
+        var tempSpan = document.getElementById("zone2");
+        tempSpan.innerHTML = "zone 2 state " + parsedData.sta + " on time "+ parsedData.sth + ":"+ parsedData.stm + " off time " + parsedData.sph + ":" + parsedData.spm +" days " + parsedData.day;
+        tempSpan.style.fontSize = "16px";
+        },false);
       eventSource.addEventListener('Zone3', function(e) {
-          var parsedData = JSON.parse(e.data);
-          var tempSpan = document.getElementById("zone3");
-          var tsSpan   = document.getElementById("tstamp");
-          tempSpan.innerHTML = "zone 3 state " + parsedData.data + " on time, off time - days";
-          tempSpan.style.fontSize = "16px";
-          },false);
+        var rawData = JSON.parse(e.data);
+        var parsedData = JSON.parse(rawData.data);
+        var tempSpan = document.getElementById("zone3");
+        tempSpan.innerHTML = "zone 3 state " + parsedData.sta + " on time "+ parsedData.sth + ":"+ parsedData.stm + " off time " + parsedData.sph + ":" + parsedData.spm +" days " + parsedData.day;
+        tempSpan.style.fontSize = "16px";
+        },false);
       eventSource.addEventListener('Zone4', function(e) {
-          var parsedData = JSON.parse(e.data);
-          var tempSpan = document.getElementById("zone4");
-          tempSpan.innerHTML = "zone 4 state " + parsedData.data + " on time, off time - days";
-          tempSpan.style.fontSize = "16px";
-          } ,false);
+        var rawData = JSON.parse(e.data);
+        var parsedData = JSON.parse(rawData.data);
+        var tempSpan = document.getElementById("zone4");
+        tempSpan.innerHTML = "zone 4 state " + parsedData.sta + " on time "+ parsedData.sth + ":"+ parsedData.stm + " off time " + parsedData.sph + ":" + parsedData.spm +" days " + parsedData.day;
+        tempSpan.style.fontSize = "16px";
+        },false);
       eventSource.addEventListener('Zone5', function(e) {
           var rawData = JSON.parse(e.data);
           var parsedData = JSON.parse(rawData.data);

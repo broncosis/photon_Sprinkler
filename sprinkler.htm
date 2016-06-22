@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-      <title>Bobcat Sprinklers</title>
+      <title>Bobcat Sprinklers test</title>
   </head>
 
   <body onload="start()">
@@ -10,6 +10,7 @@
       <option value="2">2</option>
       <option value="3">3</option>
       <option value="4">4</option>
+      
       </select>
     Start Hour <select class="form-control" id="startHour">
       <option value="00">12:00</option>
@@ -67,10 +68,10 @@
     <input type="checkbox" name="choice" value="1" onchange="checkTotal()" id="day1"/>Sunday
     <input type="checkbox" name="choice" value="2" onchange="checkTotal()" id="day2"/>Monday
     <input type="checkbox" name="choice" value="4" onchange="checkTotal()" id="day3"/>Tuesday
-    <input type="checkbox" name="choice" value="8" onchange="checkTotal()" id="day4"/>Wensday
+    <input type="checkbox" name="choice" value="8" onchange="checkTotal()" id="day4"/>Wednesday
     <input type="checkbox" name="choice" value="16" onchange="checkTotal()" id="day5"/>Thursday
     <input type="checkbox" name="choice" value="32" onchange="checkTotal()" id="day6"/>Friday
-    <input type="checkbox" name="choice" value="64" onchange="checkTotal()" id="day7"/>Saterday
+    <input type="checkbox" name="choice" value="64" onchange="checkTotal()" id="day7"/>Saturday
     <input type="hidden" size="3" name="total" id="days" value="0">
   </form>
     <button type="button" onclick="sendValues()">Send values</button>
@@ -97,15 +98,13 @@
     <button id = "7"  type="button" onclick="manual(this)">Zone 4 on</button>
     <button id = "8"  type="button" onclick="manual(this)">Zone 4 off</button><br>
 
-
-<div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/1?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Water%20Lvl%20cm&amp;xaxis=Date%2FTime&amp;title=Water%20Lvl%20cm" height="300" width="800" ></iframe></div><br>
-<div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/2?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Water%20Lvl%20Ltrs&amp;xaxis=Date%2FTime&amp;title=Water%20Lvl%20Ltrs" height="300" width="800" ></iframe></div><br>
-<div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/3?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Temp&amp;xaxis=Date%2FTime&amp;title=Temprature" height="300" width="800" ></iframe></div><br>
-<div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/4?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Humidity&amp;xaxis=Date%2FTime&amp;title=Humidity" height="300" width="800" ></iframe></div><br>
+    <div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/1?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Water%20Lvl%20cm&amp;xaxis=Date%2FTime&amp;title=Water%20Lvl%20cm" height="300" width="800" ></iframe></div><br>
+    <div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/2?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Water%20Lvl%20Ltrs&amp;xaxis=Date%2FTime&amp;title=Water%20Lvl%20Ltrs" height="300" width="800" ></iframe></div><br>
+    <div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/3?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Temp&amp;xaxis=Date%2FTime&amp;title=Temprature" height="300" width="800" ></iframe></div><br>
+    <div style="text-align: center;"><iframe style="border: 1px solid rgb(204, 204, 204);" src="https://api.thingspeak.com/channels/106090/charts/4?width=800&amp;height=300&amp;average=60&amp;results=2000&amp;days=14;dynamic=true&amp;yaxis=Humidity&amp;xaxis=Date%2FTime&amp;title=Humidity" height="300" width="800" ></iframe></div><br>
 
     <script src="http://cdn.jsdelivr.net/particle-api-js/5/particle.min.js"> </script>
     <script type="text/javascript">
-
 var accessToken ="";
 var deviceID ="";
 var accessData;
@@ -210,6 +209,12 @@ switch (button.id) {
         case '8':
             manualControl = '2~4~0~1~1~1~1';
             break;
+        case '9':
+            manualControl = '2~5~1~1~1~1~1';
+            break;
+        case '10':
+            manualControl = '2~5~0~1~1~1~1';
+            break;
         default:
             return false;
     }
@@ -251,34 +256,36 @@ switch (button.id) {
           console.log("Errored!"); },false);
 
       eventSource.addEventListener('Zone1', function(e) {
-          var parsedData = JSON.parse(e.data);
-          var tempSpan = document.getElementById("zone1");
           var tsSpan   = document.getElementById("tstamp");
-          tempSpan.innerHTML = "zone 1 state " + parsedData.data + " on time, off time - days ";
+          var rawData = JSON.parse(e.data);
+          var parsedData = JSON.parse(rawData.data);
+          var tempSpan = document.getElementById("zone1");
+          tempSpan.innerHTML = "zone 1 state " + parsedData.sta + " on time "+ parsedData.sth + ":"+ parsedData.stm + " off time " + parsedData.sph + ":" + parsedData.spm +" days " + parsedData.day;
           tempSpan.style.fontSize = "16px";
-          tsSpan.innerHTML = "At timestamp " + parsedData.published_at;
+          tsSpan.innerHTML = "At timestamp " + rawData.published_at;
           tsSpan.style.fontSize = "9px";
           },false);
       eventSource.addEventListener('Zone2', function(e) {
-          var parsedData = JSON.parse(e.data);
-          var tempSpan = document.getElementById("zone2");
-          var tsSpan   = document.getElementById("tstamp");
-          tempSpan.innerHTML = "zone 2 state " + parsedData.data + " on time, off time - days ";
-          tempSpan.style.fontSize = "16px";
-          },false);
+        var rawData = JSON.parse(e.data);
+        var parsedData = JSON.parse(rawData.data);
+        var tempSpan = document.getElementById("zone2");
+        tempSpan.innerHTML = "zone 2 state " + parsedData.sta + " on time "+ parsedData.sth + ":"+ parsedData.stm + " off time " + parsedData.sph + ":" + parsedData.spm +" days " + parsedData.day;
+        tempSpan.style.fontSize = "16px";
+        },false);
       eventSource.addEventListener('Zone3', function(e) {
-          var parsedData = JSON.parse(e.data);
-          var tempSpan = document.getElementById("zone3");
-          var tsSpan   = document.getElementById("tstamp");
-          tempSpan.innerHTML = "zone 3 state " + parsedData.data + " on time, off time - days";
-          tempSpan.style.fontSize = "16px";
-          },false);
+        var rawData = JSON.parse(e.data);
+        var parsedData = JSON.parse(rawData.data);
+        var tempSpan = document.getElementById("zone3");
+        tempSpan.innerHTML = "zone 3 state " + parsedData.sta + " on time "+ parsedData.sth + ":"+ parsedData.stm + " off time " + parsedData.sph + ":" + parsedData.spm +" days " + parsedData.day;
+        tempSpan.style.fontSize = "16px";
+        },false);
       eventSource.addEventListener('Zone4', function(e) {
-          var parsedData = JSON.parse(e.data);
-          var tempSpan = document.getElementById("zone4");
-          tempSpan.innerHTML = "zone 4 state " + parsedData.data + " on time, off time - days";
-          tempSpan.style.fontSize = "16px";
-          } ,false);
+        var rawData = JSON.parse(e.data);
+        var parsedData = JSON.parse(rawData.data);
+        var tempSpan = document.getElementById("zone4");
+        tempSpan.innerHTML = "zone 4 state " + parsedData.sta + " on time "+ parsedData.sth + ":"+ parsedData.stm + " off time " + parsedData.sph + ":" + parsedData.spm +" days " + parsedData.day;
+        tempSpan.style.fontSize = "16px";
+        },false);
       eventSource.addEventListener('Stats', function(e) {
           var rawData = JSON.parse(e.data);
           var parsedData = JSON.parse(rawData.data);
