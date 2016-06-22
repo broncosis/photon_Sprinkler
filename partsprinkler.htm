@@ -116,7 +116,7 @@ var accessData;
   }
 
   //usage:
-  readTextFile("/testing.json", function(text){
+  readTextFile("/config.json", function(text){
       accessData = JSON.parse(text);
       accessToken = String(accessData.token);
       deviceID = String(accessData.device);

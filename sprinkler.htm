@@ -10,7 +10,7 @@
       <option value="2">2</option>
       <option value="3">3</option>
       <option value="4">4</option>
-      
+
       </select>
     Start Hour <select class="form-control" id="startHour">
       <option value="00">12:00</option>
@@ -121,7 +121,7 @@ var accessData;
   }
 
   //usage:
-  readTextFile("/testing.json", function(text){
+  readTextFile("/config.json", function(text){
       accessData = JSON.parse(text);
       accessToken = String(accessData.token);
       deviceID = String(accessData.device);
