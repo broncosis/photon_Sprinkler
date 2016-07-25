@@ -5,11 +5,6 @@
 #include "config.h"
 
 #define ARRAY_SIZE 6
-#define ZONE1_MONITOR 1
-#define ZONE2_MONITOR 2
-#define ZONE3_MONITOR 3
-#define ZONE4_MONITOR 4
-#define ZONE5_MONITOR 5
 
 int i =0;  //looping variable
 double cm = 0.0;
@@ -17,7 +12,7 @@ int trigPin = D4;
 int echoPin = D5;
 int lvl;
 int ltrs;
-int loops = 4;
+int loops = 1;
 int days[8];
 int sprink1day;
 int sprink1timeonMin;
@@ -37,8 +32,8 @@ int state[5] = {0,0,0,0,0};
 int zoneOut[6] = {D7,A4,A5,A6,A7,D7};
 int soiltest[4] ={A0,A1,A2,A3};
 int soilenable = D2;
-int soilzone[6];
-int publish;
+int soilzone[6] = {0,0,0,0,0,0};
+int publish[5] = {0,0,0,0,0};
 TCPClient client;
 HC_SR04 rangefinder = HC_SR04(trigPin, echoPin, 2.0,110.0);
 HTU21D htu = HTU21D();
@@ -58,7 +53,7 @@ digitalWrite(zoneOut[2],HIGH);
 digitalWrite(zoneOut[3],HIGH);
 digitalWrite(zoneOut[4],HIGH);
 digitalWrite(zoneOut[5],HIGH);
-digitalWrite(soilenable,HIGH);
+digitalWrite(soilenable,LOW);
 
 
 EEPROM.get(10, zone1str);
@@ -78,10 +73,13 @@ Particle.function("parse",parse);
 Serial.println("HTU21D test");
 
 	while(! htu.begin()){
-	    Serial.println("HTU21D not found");
-	    delay(1000);
+	    sprintf(publishString, "{\"Tmp\": HTU21D not found}");
+	    Particle.publish("Stats",publishString);
+	    delay(2000);
 	}
-Serial.println("HTU21D OK");
+sprintf(publishString, "{\"Tmp\": HTU21D ok}");
+	    Particle.publish("Stats",publishString);
+//Serial.println("HTU21D OK");
 days[0] = 0;
 
 
@@ -103,73 +101,59 @@ soilCheck();
 
 
 void loop(){
-   runZone(1);
-   runZone(2);
-   runZone(3);
-   runZone(4);
-   runZone(5);
 
      unsigned long now = millis();
     //Every 30 seconds publish uptime
     if (now-lastTime>30000UL) {
         lastTime = now;
         // now is in milliseconds
+        // code here runs every 30 seconds  every time through
         lvlcheck();
+        soilCheck();
         tmp = htu.readTemperature();
         humd = htu.readHumidity();
-       if (loops ==2){
-        soilCheck();
-        sprintf(publishString,"{\"Tmp\": %u, \"Hum\": %u, \"Lvl\": %u, \"Ltrs\": %u}",tmp,humd,lvl,ltrs);
-        Particle.publish("Stats",publishString);
-        }
+        if (loops == 1){        //first time through the loop
+                Publishzone(1);
+                Publishzone(16);
+                }
+        if (loops == 2){        //second time through the loop
+                Publishzone(2);
+                delay(100);
+                Publishzone(17);
+                }
+        if (loops == 3){        //third time through the loop
+                Publishzone(3);
+                delay(100);
+                Publishzone(18);
+                                }
+        if (loops == 4){        //forth time through
+                Publishzone(4);
+                Publishzone(19);
+                delay(100);
+                Publishzone(5);
+                loops = 0;
+                publish[0] = 0;
+                publish[1] = 0;
+                publish[2] = 0;
+                publish[3] = 0;
+                publish[4] = 0;
+                }
 
-        if (loops == 4 ){
-            soilCheck();
-            sprintf(publishString,"{\"Tmp\": %u, \"Hum\": %u, \"Lvl\": %u, \"Ltrs\": %u}",tmp,humd,lvl,ltrs);
-            Particle.publish("Stats",publishString);
-            Publishzone(6);
-            delay(300);
-            Publishzone(1);
-            delay(300);
-            Publishzone(2);
-            delay(300);
-            Publishzone(3);
-            delay(300);
-            Publishzone(4);
-            delay(300);
-            Publishzone(5);
-
-            loops = 0;
-            publish = 0;
-
-        }
+		// loop counter 4 loops = 2.5 mins
 		loops = ++loops;
     }
-};
+runZone(1);
+runZone(2);
+runZone(3);
+runZone(4);
+runZone(5);
 
-
-int lvlcheck(){
-cm = rangefinder.getDistanceCM();
-delay(100);
-lvl = 103-cm;
-if (lvl > 48){
-    ltrs = lvl*11.1 + 600;
-}
-else {ltrs = lvl * 23.6;}
-return lvl;
-// barell heigh 68.5  x 18.76  this is calculated for my own setup ( 1 ibc tote and 3 plastic drums on thier side )
 
 };
 
 
 int parse(String command){
 Serial.println("got it");
-Serial.print("Hum:"); Serial.println(htu.readHumidity());
-Serial.print("Temp:"); Serial.println(htu.readTemperature());
-lvlcheck();
-Serial.print("CM:");Serial.println(cm);
-Serial.print("LvL:");Serial.println(lvl);
-Serial.println();
 
     char charBuf[50];
     command.toCharArray(charBuf, 50);
@@ -242,7 +226,7 @@ switch(zOne){
 }
 Publishzone(zOne);
 }
-if (values[0] == 2){
+if (values[0] == 2){  //manual control
 int mZone;
     mZone = values[1];
         if (values[2]==0){
@@ -264,6 +248,20 @@ int mZone;
             EEPROM.put(90, state);
         }
 Publishzone(mZone);
+}
+if (values[0] == 3){  // force update of all zones and stats
+Publishzone(1);
+delay(300);
+Publishzone(2);
+delay(300);
+Publishzone(3);
+delay(300);
+Publishzone(4);
+delay(300);
+Publishzone(5);
+delay(300);
+Publishzone(18);
+
 }
 return 0;
 }
@@ -309,38 +307,48 @@ int monitor;
     stopmin = tomin(zoneTorun[2]) + zoneTorun[3];
    //soil moisture time adjustmets
 
+   //too wet don't water
    if (monitor > 0 && monitor < 6){
-        if (soilzone[monitor] > 600){
+        if (soilzone[monitor] > 3900){
             zoneTorun[4] = 0 ;
             Serial.print("zone ");
             Serial.print(cycle);
             Serial.println(" does not need water");
-            if (loops == 1 && publish == 0) {
-            sprintf(publishString,"%u, no water needed ",soilzone[monitor]);
-            Particle.publish("soil5",publishString);
-            publish + 1;
-            }
+            if (loops == 1 ){
+                if (publish[cycle - 1] == 0) {
+            sprintf(publishString,"%u, no water needed for zone %u",soilzone[monitor],cycle);
+            Particle.publish("soil",publishString);
+            publish[cycle - 1] + 1;
+            }}
         }
-    if (soilzone[monitor] > 300 && soilzone[monitor] < 600){
+        //needs some water cut time in half
+    if (soilzone[monitor] > 1200 && soilzone[monitor] < 2200){
         int minmod;
         minmod = stopmin - startmin;
         minmod = minmod / 2;
         stopmin = stopmin - minmod;
 
-
+     //monitor coments
        if (loops == 1) {
-           if (publish == 0){
+           if (publish[cycle - 1] == 0){
             int newstopmin;
             int newstophour = stopmin / 60;
             int work = newstophour * 60;
             newstopmin = stopmin - work;
-        sprintf(publishString,"%u,mon %u:%u time off, %u:%u modified %u",monitor,zoneTorun[2],zoneTorun[3],newstophour,newstopmin,stopmin);
-        Particle.publish("soil5",publishString);
-        publish + 1;
+        sprintf(publishString,"zone %u - %u,mon %u:%u time off, %u:%u modified %u",cycle,monitor,zoneTorun[2],zoneTorun[3],newstophour,newstopmin,stopmin);
+        Particle.publish("soil",publishString);
+        publish[cycle - 1] + 1;
            }
         }
     }
-
+    // no changes
+     if (soilzone[monitor] < 2800) {
+        if (loops == 1 ){
+                if (publish[cycle - 1] == 0) {
+                    sprintf(publishString,"%u, no adjustmet needed for zone %u",soilzone[monitor],cycle);
+                    Particle.publish("soil",publishString);
+                     publish[cycle - 1] + 1;
+                    }}}
     }
 
 
@@ -349,28 +357,20 @@ Days(zoneTorun[4]);
         if (days[Time.weekday()] == 1){             //check the day
              int realmins = Time.hour();
              realmins = tomin(realmins) + Time.minute();
-
-             if(realmins >= stopmin){
+             // we use try for a extar minute to make sure its off
+             if(realmins >= stopmin && realmins <= stopmin + 1){
                  if(state[cycle-1] == 1){
-               Serial.print("turning zone ");
-               Serial.print(cycle);
-               Serial.println(" off");
                digitalWrite(zoneOut[cycle], HIGH);
-               Serial.println(zoneOut[cycle]);
                Publishzone(cycle);
                state[cycle-1] = 0;
                EEPROM.put(90, state);
                  }
             }
-            if(realmins == startmin ){
+            if(realmins >= startmin && realmins <= startmin + 1){
                 if(state[cycle-1] == 0){
-                Serial.print("turning zone ");
-                Serial.print(cycle);
-                Serial.println(" on");
                 digitalWrite(zoneOut[cycle], LOW);
                 Publishzone(cycle);
                 state[cycle-1] = 1;
-                Serial.println(zoneOut[cycle]);
                 EEPROM.put(90, state);
                 }
             }
@@ -398,62 +398,79 @@ int Days(int daYs) {
 
 int Publishzone(int pzone) {
 
-    if (pzone == 1){
-        sprintf(publishString,"%u-%u:%u, %u:%u - %u",state[0],zone1str[0],zone1str[1],zone1str[2],zone1str[3],zone1str[4]);
-		//sprintf(publishString,"{\"sta\":%u,\"sth\":%u,\"stm\":%u,\"sph\":%u,\"spm\":%u,\"day\":%u}",state[0],zone1str[0],zone1str[1],zone1str[2],zone1str[3],zone1str[4]);
-        Particle.publish("Zone1",publishString);
-        ThingSpeak.setField(1,state[0]);
-        ThingSpeak.writeFields(THINGSPEAKCHANNEL2, THINGSPEAKWRITEAPI2);
-    }
-    if (pzone == 2){
-        sprintf(publishString,"%u-%u:%u, %u:%u - %u",state[1],zone2str[0],zone2str[1],zone2str[2],zone2str[3],zone2str[4]);
+    if (pzone == 1){    // zone 1 publish
+        sprintf(publishString,"{\"sta\":%u,\"sth\":%u,\"stm\":%u,\"sph\":%u,\"spm\":%u,\"day\":%u}",state[0],zone1str[0],zone1str[1],zone1str[2],zone1str[3],zone1str[4]);
+		Particle.publish("Zone1",publishString);
+       // ThingSpeak.setField(1,state[0]);
+    //    ThingSpeak.writeFields(THINGSPEAKCHANNEL2, THINGSPEAKWRITEAPI2);
+        }
+    if (pzone == 2){    // zone 2 publish
+        sprintf(publishString,"{\"sta\":%u,\"sth\":%u,\"stm\":%u,\"sph\":%u,\"spm\":%u,\"day\":%u}",state[1],zone2str[0],zone2str[1],zone2str[2],zone2str[3],zone2str[4]);
         Particle.publish("Zone2",publishString);
-        ThingSpeak.setField(2,state[1]);
-        ThingSpeak.writeFields(THINGSPEAKCHANNEL2, THINGSPEAKWRITEAPI2);
-    }
-    if (pzone == 3){
-        sprintf(publishString,"%u-%u:%u, %u:%u - %u",state[2],zone3str[0],zone3str[1],zone3str[2],zone3str[3],zone3str[4]);
+    //    ThingSpeak.setField(2,state[1]);
+     //   ThingSpeak.writeFields(THINGSPEAKCHANNEL2, THINGSPEAKWRITEAPI2);
+        }
+    if (pzone == 3){    // zone 3 publish
+        sprintf(publishString,"{\"sta\":%u,\"sth\":%u,\"stm\":%u,\"sph\":%u,\"spm\":%u,\"day\":%u}",state[2],zone3str[0],zone3str[1],zone3str[2],zone3str[3],zone3str[4]);
         Particle.publish("Zone3",publishString);
-        ThingSpeak.setField(3,state[2]);
-        ThingSpeak.writeFields(THINGSPEAKCHANNEL2, THINGSPEAKWRITEAPI2);
-    }
-    if (pzone == 4){
-        sprintf(publishString,"%u-%u:%u, %u:%u - %u",state[3],zone4str[0],zone4str[1],zone4str[2],zone4str[3],zone4str[4]);
+      //  ThingSpeak.setField(3,state[2]);
+        //ThingSpeak.writeFields(THINGSPEAKCHANNEL2, THINGSPEAKWRITEAPI2);
+        }
+    if (pzone == 4){    // zone 4 publish
+        sprintf(publishString,"{\"sta\":%u,\"sth\":%u,\"stm\":%u,\"sph\":%u,\"spm\":%u,\"day\":%u}",state[3],zone4str[0],zone4str[1],zone4str[2],zone4str[3],zone4str[4]);
         Particle.publish("Zone4",publishString);
-        ThingSpeak.setField(4,state[3]);
-        ThingSpeak.writeFields(THINGSPEAKCHANNEL2, THINGSPEAKWRITEAPI2);
-    }
-    if (pzone == 5){
-        //sprintf(publishString,"%u-%u:%u, %u:%u - %u",state[4],zone5str[0],zone5str[1],zone5str[2],zone5str[3],zone5str[4]);
+       // ThingSpeak.setField(4,state[3]);
+    //    ThingSpeak.writeFields(THINGSPEAKCHANNEL2, THINGSPEAKWRITEAPI2);
+        }
+        // zone five inactive test zone no thing speak data
+    if (pzone == 5){    // zone 5 publish
         sprintf(publishString,"{\"sta\":%u,\"sth\":%u,\"stm\":%u,\"sph\":%u,\"spm\":%u,\"day\":%u}",state[4],zone5str[0],zone5str[1],zone5str[2],zone5str[3],zone5str[4]);
         Particle.publish("Zone5",publishString);
         }
 
-    if (pzone == 6){ //thingspeak
-        ThingSpeak.setField(1,lvl);
-	      ThingSpeak.setField(2,ltrs);
-				ThingSpeak.setField(3,htu.readTemperature());
-				ThingSpeak.setField(4,htu.readHumidity());
-				ThingSpeak.setField(5,soilzone[1]);
-				ThingSpeak.setField(6,soilzone[2]);
-				ThingSpeak.setField(7,soilzone[3]);
-				ThingSpeak.setField(8,soilzone[4]);
-				ThingSpeak.writeFields(THINGSPEAKCHANNEL1, THINGSPEAKWRITEAPI1); 
+    if (pzone == 16){ //thingspeak
+    	ThingSpeak.setField(1,lvl);
+	  	ThingSpeak.setField(2,ltrs);
+			ThingSpeak.setField(3,htu.readTemperature());
+			ThingSpeak.setField(4,htu.readHumidity());
+			ThingSpeak.setField(5,soilzone[1]);
+			ThingSpeak.setField(6,soilzone[2]);
+			ThingSpeak.setField(7,soilzone[3]);
+			ThingSpeak.setField(8,soilzone[4]);
+			ThingSpeak.writeFields(THINGSPEAKCHANNEL1, THINGSPEAKWRITEAPI1);
+        }
 
-    }
+    if (pzone == 17){    // publish soil info
+        sprintf(publishString,"zone 1 %u - zone 2 %u - zone 3 %u - zone 4 %u",soilzone[1],soilzone[2],soilzone[3],soilzone[4]);
+        Particle.publish("soil",publishString);
+        }
 
+    if (pzone == 18){  //publish stats
+        sprintf(publishString,"{\"Tmp\": %u, \"Hum\": %u, \"Lvl\": %u, \"Ltrs\": %u}",tmp,humd,lvl,ltrs);
+        Particle.publish("Stats",publishString);
 
+        }
+
+   if (pzone == 19){
+            ThingSpeak.setField(1,state[0]);
+            ThingSpeak.setField(2,state[1]);
+            ThingSpeak.setField(3,state[2]);
+            ThingSpeak.setField(4,state[3]);
+            ThingSpeak.writeFields(THINGSPEAKCHANNEL2, THINGSPEAKWRITEAPI2);
+
+   }
 
 
  };
 void soilCheck(){
-    digitalWrite(soilenable, LOW);
-    soilzone[1] = 100; //analogRead(soiltest[0]);
-    soilzone[2] = 280; // analogRead(soiltest[1]);
-    soilzone[3] = 200; //analogRead(soiltest[2]);
-    soilzone[4] = 205; //analogRead(soiltest[3]);
-    soilzone[5] = 500;
     digitalWrite(soilenable, HIGH);
+    delay(100);
+    soilzone[1] = analogRead(soiltest[0]);
+    soilzone[2] = analogRead(soiltest[1]);
+    soilzone[3] = analogRead(soiltest[2]);
+    soilzone[4] = analogRead(soiltest[3]);
+    soilzone[5] = 800;
+    digitalWrite(soilenable, LOW);
 
 };
 
@@ -462,3 +479,16 @@ int tomin(int input){
 input = input * 60;
 return input;
 }
+
+int lvlcheck(){
+cm = rangefinder.getDistanceCM();
+delay(100);
+lvl = 103-cm;
+if (lvl > 48){
+    ltrs = lvl*11.1 + 600;
+}
+else {ltrs = lvl * 23.6;}
+return lvl;
+// barell heigh 68.5  x 18.76  this is calculated for my own setup ( 1 ibc tote and 3 plastic drums on thier side )
+
+};
