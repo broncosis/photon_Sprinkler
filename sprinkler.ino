@@ -437,11 +437,7 @@ int Publishzone(int pzone) {
 			ThingSpeak.setField(6,soilzone[2]);
 			ThingSpeak.setField(7,soilzone[3]);
 			ThingSpeak.setField(8,soilzone[4]);
-<<<<<<< HEAD
 			ThingSpeak.writeFields(THINGSPEAKCHANNEL1, THINGSPEAKWRITEAPI1);
-=======
-			ThingSpeak.writeFields(THINGSPEAKCHANNEL1, THINGSPEAKWRITEAPI1); 
->>>>>>>  	modified:   sprinkler.ino  fixed publish scripting to remove delays and fixed a bug with the system failing to turn off
         }
 
     if (pzone == 17){    // publish soil info
