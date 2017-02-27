@@ -34,6 +34,8 @@ int soiltest[4] ={A0,A1,A2,A3};
 int soilenable = D2;
 int soilzone[6] = {0,0,0,0,0,0};
 int publish[5] = {0,0,0,0,0};
+int toggler[3] = {0,0,0};
+
 TCPClient client;
 HC_SR04 rangefinder = HC_SR04(trigPin, echoPin, 2.0,110.0);
 HTU21D htu = HTU21D();
@@ -65,7 +67,7 @@ EEPROM.get(110, zone5str);
 
 ThingSpeak.begin(client);
 
-Time.zone(-7);
+Time.zone(-8);
 
 Serial.begin(9600);
 Particle.function("parse",parse);
@@ -104,33 +106,39 @@ void loop(){
 
      unsigned long now = millis();
     //Every 30 seconds publish uptime
-    if (now-lastTime>30000UL) {
+    if (now-lastTime>15000UL) {
         lastTime = now;
         // now is in milliseconds
-        // code here runs every 30 seconds  every time through
+        // code here runs every 15 seconds  every time through
         lvlcheck();
         soilCheck();
         tmp = htu.readTemperature();
         humd = htu.readHumidity();
         if (loops == 1){        //first time through the loop
                 Publishzone(1);
-                Publishzone(16);
+								Publishzone(16);
                 }
         if (loops == 2){        //second time through the loop
                 Publishzone(2);
-                delay(100);
-                Publishzone(17);
                 }
         if (loops == 3){        //third time through the loop
                 Publishzone(3);
-                delay(100);
-                Publishzone(18);
-                                }
-        if (loops == 4){        //forth time through
-                Publishzone(4);
-                Publishzone(19);
-                delay(100);
-                Publishzone(5);
+								Publishzone(19);
+                }
+				if (loops == 4){
+								Publishzone(4);
+				 				}
+				if (loops == 5){
+								Publishzone(5);
+			 					}
+				if (loops == 6){
+								Publishzone(18);
+			 					}
+				if (loops == 7){
+								Publishzone(17);
+								}
+				if (loops == 8){        //forteenth time through
+
                 loops = 0;
                 publish[0] = 0;
                 publish[1] = 0;
@@ -139,7 +147,6 @@ void loop(){
                 publish[4] = 0;
                 }
 
-		// loop counter 4 loops = 2.5 mins
 		loops = ++loops;
     }
 runZone(1);
@@ -463,15 +470,21 @@ int Publishzone(int pzone) {
 
  };
 void soilCheck(){
-    digitalWrite(soilenable, HIGH);
-    delay(100);
-    soilzone[1] = analogRead(soiltest[0]);
-    soilzone[2] = analogRead(soiltest[1]);
-    soilzone[3] = analogRead(soiltest[2]);
-    soilzone[4] = analogRead(soiltest[3]);
-    soilzone[5] = 800;
-    digitalWrite(soilenable, LOW);
-
+	if (toggler[0] == 1){
+			soilzone[1] = analogRead(soiltest[0]);
+    	soilzone[2] = analogRead(soiltest[1]);
+    	soilzone[3] = analogRead(soiltest[2]);
+    	soilzone[4] = analogRead(soiltest[3]);
+    	soilzone[5] = 800;
+    	digitalWrite(soilenable, LOW);
+			toggler[0] = 0;
+			return;
+			}
+		if (toggler[0] == 0) {
+			digitalWrite(soilenable, HIGH);
+			toggler[0] = 1;
+			return;
+		}
 };
 
 
