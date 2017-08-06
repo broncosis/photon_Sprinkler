@@ -1,9 +1,8 @@
 // This #include statement was automatically added by the Particle IDE.
-#include "HTU21D/HTU21D.h"
-#include "ThingSpeak/ThingSpeak.h"
-#include "HC_SR04/HC_SR04.h"
+#include <HC_SR04.h>
+#include <HTU21D.h>
+#include <ThingSpeak.h>
 #include "config.h"
-
 #define ARRAY_SIZE 6
 
 int i =0;  //looping variable
@@ -19,6 +18,8 @@ int sprink1timeonMin;
 int sprink1timeonHr;
 int sprink1timeoffMin;
 int sprink1timeoffHr;
+int startmin;
+int stopmin;
 int zone1str[ARRAY_SIZE];
 int zone2str[ARRAY_SIZE];
 int zone3str[ARRAY_SIZE];
@@ -35,7 +36,7 @@ int soilenable = D2;
 int soilzone[6] = {0,0,0,0,0,0};
 int publish[5] = {0,0,0,0,0};
 int toggler[3] = {0,0,0};
-
+byte out = 0B11111111;
 TCPClient client;
 HC_SR04 rangefinder = HC_SR04(trigPin, echoPin, 2.0,110.0);
 HTU21D htu = HTU21D();
@@ -67,7 +68,7 @@ EEPROM.get(110, zone5str);
 
 ThingSpeak.begin(client);
 
-Time.zone(-8);
+Time.zone(TIME_ZONE);
 
 Serial.begin(9600);
 Particle.function("parse",parse);
@@ -85,16 +86,35 @@ sprintf(publishString, "{\"Tmp\": HTU21D ok}");
 days[0] = 0;
 
 
-if (state[0]==1){digitalWrite(zoneOut[1],LOW);}
+if (state[0]==1){
+    digitalWrite(zoneOut[1],LOW);
+    out = out - PIN1;
+}
 else {digitalWrite(zoneOut[1],HIGH);}
-if (state[1]==1){digitalWrite(zoneOut[2],LOW);}
+if (state[1]==1){
+    digitalWrite(zoneOut[2],LOW);
+    out = out - PIN2;
+    }
 else {digitalWrite(zoneOut[2],HIGH);}
-if (state[2]==1){digitalWrite(zoneOut[3],LOW);}
+if (state[2]==1){
+    digitalWrite(zoneOut[3],LOW);
+    out = out - PIN3;
+    }
 else {digitalWrite(zoneOut[3],HIGH);}
-if (state[3]==1){digitalWrite(zoneOut[4],LOW);}
+if (state[3]==1){
+    digitalWrite(zoneOut[4],LOW);
+    out = out - PIN4;
+    }
 else {digitalWrite(zoneOut[4],HIGH);}
-if (state[4]==1){digitalWrite(zoneOut[5],LOW);}
+if (state[4]==1){
+    digitalWrite(zoneOut[5],LOW);
+    out = out - PIN5;
+    }
 else {digitalWrite(zoneOut[5],HIGH);}
+
+Wire.beginTransmission(Addr);
+Wire.write(out);
+Wire.endTransmission();
 
 lvlcheck();
 soilCheck();
@@ -269,11 +289,11 @@ Publishzone(5);
 delay(300);
 Publishzone(18);
 
-}
+};
 return 0;
-}
-int startmin;
-int stopmin;
+};
+
+
 int runZone(int cycle){  //this is our primary time loop
 int zoneTorun[ARRAY_SIZE];
 int monitor;
@@ -401,7 +421,7 @@ int Days(int daYs) {
                 }
             }
 
-        }
+        };
 
 int Publishzone(int pzone) {
 
@@ -494,8 +514,14 @@ return input;
 }
 
 int lvlcheck(){
+pinMode(echoPin, OUTPUT); // Then we set echo pin to output mode
+digitalWrite(echoPin, LOW); // We send a LOW pulse to the echo pin
+delayMicroseconds(200);
+pinMode(echoPin, INPUT);
+delayMicroseconds(200);
+
 cm = rangefinder.getDistanceCM();
-delay(100);
+//delay(100);
 lvl = 103-cm;
 if (lvl > 48){
     ltrs = lvl*11.1 + 600;
@@ -503,5 +529,38 @@ if (lvl > 48){
 else {ltrs = lvl * 23.6;}
 return lvl;
 // barell heigh 68.5  x 18.76  this is calculated for my own setup ( 1 ibc tote and 3 plastic drums on thier side )
+};
+
+
+int ZONEon(int input){
+if (input == 1){out = out - PIN1;}
+if (input == 2){out = out - PIN2;}
+if (input == 3){out = out - PIN3;}
+if (input == 4){out = out - PIN4;}
+if (input == 5){out = out - PIN5;}
+
+Wire.beginTransmission(Addr);
+Wire.write(out);
+Wire.endTransmission();
 
 };
+
+int ZONEoff(int input){
+if (input == 1){out = out + PIN1;}
+if (input == 2){out = out + PIN2;}
+if (input == 3){out = out + PIN3;}
+if (input == 4){out = out + PIN4;}
+if (input == 5){out = out + PIN5;}
+
+Wire.beginTransmission(Addr);
+Wire.write(out);
+Wire.endTransmission();
+};
+
+int sanityCheck(){
+    if (lvl <= 10){
+        digitalWrite(zoneOut[1], HIGH);
+        digitalWrite(zoneOut[2], HIGH);
+        digitalWrite(zoneOut[3], HIGH);
+        digitalWrite(zoneOut[4], HIGH);
+} };
